@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notification System - Demo & Documentation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* Notification Styles */
+        .notification-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-width: 400px;
+        }
+
+        .notification {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            animation: slideIn 0.3s ease-out;
+            opacity: 0;
+            transform: translateX(400px);
+        }
+
+        .notification.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(400px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .notification-content {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            padding: 16px;
+            border-left: 4px solid;
+        }
+
+        .notification-success { border-left-color: #4caf50; }
+        .notification-error { border-left-color: #f44336; }
+        .notification-warning { border-left-color: #ff9800; }
+        .notification-info { border-left-color: #2196f3; }
+        .notification-loading { border-left-color: #9c27b0; }
+
+        .notification-icon {
+            flex-shrink: 0;
+            font-size: 24px;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .notification-icon svg {
+            width: 100%;
+            height: 100%;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .spinner {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .notification-body {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .notification-title {
+            font-size: 0.95em;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .notification-message {
+            font-size: 0.85em;
+            color: #666;
+            line-height: 1.4;
+        }
+
+        .notification-action {
+            margin-top: 8px;
+            padding: 4px 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.8em;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .notification-action:hover {
+            background: #764ba2;
+        }
+
+        .notification-close {
+            flex-shrink: 0;
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: #999;
+            cursor: pointer;
+            padding: 0;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s;
+        }
+
+        .notification-close:hover {
+            color: #333;
+        }
+
+        /* Main Content */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            padding: 40px 30px;
+        }
+
+        section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        button {
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            font-size: 0.9em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-success { background: #4caf50; color: white; }
+        .btn-error { background: #f44336; color: white; }
+        .btn-warning { background: #ff9800; color: white; }
+        .btn-info { background: #2196f3; color: white; }
+        .btn-loading { background: #9c27b0; color: white; }
+        .btn-secondary { background: #757575; color: white; }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 500;
+            font-size: 0.9em;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 0.9em;
+            font-family: inherit;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #667eea;
+        }
+
+        .stat-label {
+            font-size: 0.8em;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .history-section {
+            grid-column: 1 / -1;
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 20px;
+            border-radius: 8px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            line-height: 1.6;
+        }
+
+        .history-item {
+            padding: 8px;
+            border-bottom: 1px solid #333;
+            margin-bottom: 8px;
+        }
+
+        .history-timestamp {
+            color: #888;
+        }
+
+        .history-type-success { color: #4caf50; }
+        .history-type-error { color: #f44336; }
+        .history-type-warning { color: #ff9800; }
+        .history-type-info { color: #2196f3; }
+        .history-type-loading { color: #9c27b0; }
+
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+
+            .button-group {
+                grid-template-columns: 1fr;
+            }
+
+            header h1 {
+                font-size: 1.8em;
+            }
+
+            .notification-container {
+                max-width: 90vw;
+                left: 5vw;
+                right: 5vw;
+                width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔔 Notification System</h1>
+            <p>Strategic, Reusable, Production-Ready with Logging Integration</p>
+        </header>
+
+        <div class="content">
+            <!-- Quick Actions -->
+            <section>
+                <h2>Quick Notifications</h2>
+                <div class="button-group">
+                    <button class="btn-success" onclick="quickNotification('success')">Success</button>
+                    <button class="btn-error" onclick="quickNotification('error')">Error</button>
+                    <button class="btn-warning" onclick="quickNotification('warning')">Warning</button>
+                    <button class="btn-info" onclick="quickNotification('info')">Info</button>
+                </div>
+                <button class="btn-loading" style="width: 100%; margin-bottom: 15px;" onclick="quickNotification('loading')">Loading</button>
+                <button class="btn-secondary" style="width: 100%;" onclick="testNotificationSequence()">Test Sequence</button>
+            </section>
+
+            <!-- Custom Notifications -->
+            <section>
+                <h2>Custom Notification</h2>
+                <div class="form-group">
+                    <label for="notifType">Type</label>
+                    <select id="notifType">
+                        <option value="success">Success</option>
+                        <option value="error">Error</option>
+                        <option value="warning">Warning</option>
+                        <option value="info">Info</option>
+                        <option value="loading">Loading</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="notifTitle">Title</label>
+                    <input type="text" id="notifTitle" placeholder="Notification title" value="Order Confirmed">
+                </div>
+                <div class="form-group">
+                    <label for="notifMessage">Message</label>
+                    <textarea id="notifMessage" placeholder="Notification message">Your order has been placed successfully!</textarea>
+                </div>
+                <div class="form-group">
+                    <label for="notifDuration">Duration (ms)</label>
+                    <input type="number" id="notifDuration" value="5000" min="0">
+                </div>
+                <button class="btn-info" style="width: 100%;" onclick="sendCustomNotification()">Send Custom</button>
+            </section>
+
+            <!-- Advanced Actions -->
+            <section>
+                <h2>Advanced Actions</h2>
+                <div class="form-group">
+                    <label for="actionLabel">Action Label</label>
+                    <input type="text" id="actionLabel" placeholder="e.g., Retry, Undo, View" value="Retry">
+                </div>
+                <div class="form-group">
+                    <label for="actionTitle">Title</label>
+                    <input type="text" id="actionTitle" placeholder="Notification title" value="Payment Failed">
+                </div>
+                <div class="form-group">
+                    <label for="actionMessage">Message</label>
+                    <textarea id="actionMessage" placeholder="Notification message">Your payment could not be processed. Please try again.</textarea>
+                </div>
+                <button class="btn-error" style="width: 100%;" onclick="sendNotificationWithAction()">Send with Action</button>
+            </section>
+
+            <!-- Settings & Statistics -->
+            <section>
+                <h2>Settings & Stats</h2>
+                <div class="button-group">
+                    <button class="btn-secondary" onclick="toggleSound()">Toggle Sound</button>
+                    <button class="btn-secondary" onclick="clearAllNotifications()">Clear All</button>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Active</div>
+                        <div class="stat-value" id="activeCount">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">History</div>
+                        <div class="stat-value" id="historyCount">0</div>
+                    </div>
+                </div>
+                <div class="button-group" style="margin-top: 15px;">
+                    <button class="btn-secondary" onclick="updateStats()">Refresh Stats</button>
+                    <button class="btn-secondary" onclick="exportData()">Export Data</button>
+                </div>
+            </section>
+
+            <!-- History -->
+            <section class="history-section">
+                <h2 style="color: #00ff00; margin-bottom: 15px;">📋 Notification History</h2>
+                <div id="historyDisplay" style="max-height: 350px; overflow-y: auto;"></div>
+            </section>
+        </div>
+    </div>
+
+    <!-- Load scripts -->
+    <script src="logger.js"></script>
+    <script src="notification-manager.js"></script>
+    <script src="notification-ui.js"></script>
+
+    <script>
+        // Ensure session start time is set
+        if (!window.sessionStartTime) {
+            window.sessionStartTime = Date.now();
+        }
+
+        async function quickNotification(type) {
+            const messages = {
+                success: { title: 'Success!', message: 'Operation completed successfully.' },
+                error: { title: 'Error!', message: 'An error occurred. Please try again.' },
+                warning: { title: 'Warning!', message: 'Please review this important information.' },
+                info: { title: 'Info', message: 'Here is some useful information for you.' },
+                loading: { title: 'Loading...', message: 'Processing your request.' }
+            };
+
+            const msg = messages[type];
+            
+            if (type === 'loading') {
+                const notif = await NotificationManager.loading(msg.title, msg.message);
+                setTimeout(() => NotificationManager.dismiss(notif.id), 2000);
+            } else {
+                await NotificationManager[type](msg.title, msg.message);
+            }
+
+            updateStats();
+            updateHistory();
+        }
+
+        async function testNotificationSequence() {
+            await NotificationManager.info('Step 1', 'Processing...');
+            await new Promise(r => setTimeout(r, 1000));
+            
+            await NotificationManager.info('Step 2', 'Almost done...');
+            await new Promise(r => setTimeout(r, 1000));
+            
+            await NotificationManager.success('Complete', 'All steps finished successfully!');
+            
+            updateStats();
+            updateHistory();
+        }
+
+        async function sendCustomNotification() {
+            const type = document.getElementById('notifType').value;
+            const title = document.getElementById('notifTitle').value;
+            const message = document.getElementById('notifMessage').value;
+            const duration = parseInt(document.getElementById('notifDuration').value);
+
+            await NotificationManager.show(type, title, message, { duration });
+            updateStats();
+            updateHistory();
+        }
+
+        async function sendNotificationWithAction() {
+            const title = document.getElementById('actionTitle').value;
+            const message = document.getElementById('actionMessage').value;
+            const label = document.getElementById('actionLabel').value;
+
+            await NotificationManager.error(title, message, {
+                actionLabel: label,
+                action: async () => {
+                    await NotificationManager.info('Retry', 'Attempting operation again...');
+                },
+                duration: 0,
+                persistent: true
+            });
+
+            updateStats();
+            updateHistory();
+        }
+
+        async function toggleSound() {
+            const current = NotificationManager.soundEnabled;
+            NotificationManager.setSoundEnabled(!current);
+            await NotificationManager.info(
+                'Sound',
+                `Notification sounds ${!current ? 'enabled' : 'disabled'}`
+            );
+        }
+
+        async function clearAllNotifications() {
+            await NotificationManager.dismissAll();
+            await NotificationUI.instance.clearAll();
+            updateStats();
+        }
+
+        async function updateStats() {
+            const stats = await NotificationManager.getStats();
+            document.getElementById('activeCount').textContent = stats.activeCount;
+            document.getElementById('historyCount').textContent = stats.historyCount;
+        }
+
+        async function updateHistory() {
+            const history = NotificationManager.getHistory(15);
+            const historyDiv = document.getElementById('historyDisplay');
+            
+            if (history.length === 0) {
+                historyDiv.innerHTML = '<div style="color: #666;">No notifications yet</div>';
+                return;
+            }
+
+            historyDiv.innerHTML = history.map(n => {
+                const time = new Date(n.timestamp).toLocaleTimeString();
+                return `<div class="history-item">
+                    <span class="history-timestamp">[${time}]</span>
+                    <span class="history-type-${n.type}">[${n.type.toUpperCase()}]</span>
+                    <strong>${n.title}</strong>: ${n.message.substring(0, 50)}${n.message.length > 50 ? '...' : ''}
+                </div>`;
+            }).join('');
+        }
+
+        async function exportData() {
+            const data = await NotificationManager.exportData();
+            console.log('Notification Data:', data);
+            
+            await NotificationManager.success(
+                'Data Exported',
+                'Check browser console for complete data export.'
+            );
+        }
+
+        // Initialize
+        updateStats();
+        updateHistory();
+        
+        // Update every 5 seconds
+        setInterval(updateStats, 5000);
+    </script>
+</body>
+</html>

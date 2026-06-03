@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Commerce Platform with Strategic Logging</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            padding: 30px;
+        }
+
+        section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .cart-item {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #ddd;
+        }
+
+        .cart-item-info {
+            flex: 1;
+        }
+
+        .cart-item-name {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .cart-item-price {
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .remove-btn {
+            background: #f44336;
+            padding: 8px 15px;
+            font-size: 0.9em;
+            width: auto;
+        }
+
+        .cart-summary {
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            margin-top: 20px;
+            text-align: right;
+        }
+
+        .cart-total {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .log-console {
+            grid-column: 1 / -1;
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 20px;
+            border-radius: 8px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+
+        .log-entry {
+            padding: 5px 0;
+            border-bottom: 1px solid #333;
+        }
+
+        .log-debug { color: #00bcd4; }
+        .log-info { color: #4caf50; }
+        .log-warn { color: #ff9800; }
+        .log-error { color: #f44336; }
+        .log-critical { color: #9c27b0; }
+
+        .status-message {
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .status-message.show {
+            display: block;
+        }
+
+        .status-message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status-message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            header h1 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🛒 E-Commerce Platform</h1>
+            <p>With Strategic Reusable Logging Integration</p>
+        </header>
+
+        <div class="main-content">
+            <!-- Authentication Section -->
+            <section>
+                <h2>👤 User Authentication</h2>
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" placeholder="user@example.com" value="demo@example.com">
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="Enter password" value="password123">
+                </div>
+                <button id="loginBtn" onclick="handleLogin()">Login</button>
+                <button id="logoutBtn" onclick="handleLogout()" style="background: #f44336; margin-top: 10px; display: none;">Logout</button>
+                <div id="authStatus" class="status-message"></div>
+            </section>
+
+            <!-- Shopping Cart Section -->
+            <section>
+                <h2>🛍️ Shopping Cart</h2>
+                <div class="form-group">
+                    <label for="itemId">Item ID</label>
+                    <input type="text" id="itemId" placeholder="e.g., PROD-001" value="PROD-001">
+                </div>
+                <div class="form-group">
+                    <label for="itemName">Item Name</label>
+                    <input type="text" id="itemName" placeholder="e.g., Laptop" value="Wireless Headphones">
+                </div>
+                <div class="form-group">
+                    <label for="itemPrice">Price ($)</label>
+                    <input type="number" id="itemPrice" placeholder="0.00" value="49.99">
+                </div>
+                <div class="form-group">
+                    <label for="itemQty">Quantity</label>
+                    <input type="number" id="itemQty" placeholder="1" value="1" min="1">
+                </div>
+                <button onclick="handleAddToCart()">Add to Cart</button>
+            </section>
+
+            <!-- Cart Items Display -->
+            <section>
+                <h2>📦 Cart Items</h2>
+                <div id="cartItems"></div>
+                <div class="cart-summary">
+                    <div>Total Items: <span id="cartItemCount">0</span></div>
+                    <div class="cart-total">Total: $<span id="cartTotal">0.00</span></div>
+                </div>
+            </section>
+
+            <!-- Checkout Section -->
+            <section>
+                <h2>💳 Checkout</h2>
+                <div class="form-group">
+                    <label for="address">Delivery Address</label>
+                    <input type="text" id="address" placeholder="123 Main St, City, State" value="123 Main Street">
+                </div>
+                <div class="form-group">
+                    <label for="paymentMethod">Payment Method</label>
+                    <select id="paymentMethod">
+                        <option value="credit_card">Credit Card</option>
+                        <option value="debit_card">Debit Card</option>
+                        <option value="paypal">PayPal</option>
+                        <option value="apple_pay">Apple Pay</option>
+                    </select>
+                </div>
+                <button onclick="handleCheckout()">Complete Checkout</button>
+                <div id="checkoutStatus" class="status-message"></div>
+            </section>
+
+            <!-- Live Log Console -->
+            <section class="log-console">
+                <h2 style="color: #00ff00; margin-bottom: 15px;">📋 Live Log Console</h2>
+                <div id="logConsole" style="max-height: 330px; overflow-y: auto;"></div>
+                <button onclick="clearLogs()" style="margin-top: 15px;">Clear Logs</button>
+            </section>
+        </div>
+    </div>
+
+    <!-- Load Logging Package -->
+    <script src="logger.js"></script>
+    <!-- Load Application Logic -->
+    <script src="app.js"></script>
+
+    <script>
+        // Custom log display in the log console
+        const originalLog = window.log;
+        window.log = async (stack, level, pkg, message) => {
+            // Add to live console
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry log-${level.toLowerCase()}`;
+            const timestamp = new Date().toLocaleTimeString();
+            logEntry.textContent = `[${timestamp}] [${level}] ${pkg}: ${message}`;
+            
+            const console = document.getElementById('logConsole');
+            console.appendChild(logEntry);
+            console.scrollTop = console.scrollHeight;
+
+            // Call original log function
+            return originalLog(stack, level, pkg, message);
+        };
+
+        function clearLogs() {
+            document.getElementById('logConsole').innerHTML = '';
+        }
+
+        function updateCartDisplay() {
+            const cartItems = document.getElementById('cartItems');
+            const cartItemCount = document.getElementById('cartItemCount');
+            const cartTotal = document.getElementById('cartTotal');
+
+            if (ShoppingCart.items.length === 0) {
+                cartItems.innerHTML = '<p style="color: #999;">Your cart is empty</p>';
+            } else {
+                cartItems.innerHTML = ShoppingCart.items.map(item => `
+                    <div class="cart-item">
+                        <div class="cart-item-info">
+                            <div class="cart-item-name">${item.name}</div>
+                            <div class="cart-item-price">$${item.price.toFixed(2)} × ${item.quantity}</div>
+                        </div>
+                        <button class="remove-btn" onclick="handleRemoveFromCart('${item.id}')">Remove</button>
+                    </div>
+                `).join('');
+            }
+
+            cartItemCount.textContent = ShoppingCart.items.length;
+            cartTotal.textContent = ShoppingCart.getTotal().toFixed(2);
+        }
+
+        async function handleLogin() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const statusDiv = document.getElementById('authStatus');
+
+            try {
+                await UserAuth.login(email, password);
+                statusDiv.className = 'status-message show success';
+                statusDiv.textContent = '✓ Login successful!';
+                document.getElementById('loginBtn').style.display = 'none';
+                document.getElementById('logoutBtn').style.display = 'block';
+            } catch (error) {
+                statusDiv.className = 'status-message show error';
+                statusDiv.textContent = '✗ ' + error.message;
+            }
+        }
+
+        async function handleLogout() {
+            await UserAuth.logout();
+            document.getElementById('loginBtn').style.display = 'block';
+            document.getElementById('logoutBtn').style.display = 'none';
+            document.getElementById('authStatus').className = 'status-message';
+        }
+
+        async function handleAddToCart() {
+            const itemId = document.getElementById('itemId').value;
+            const itemName = document.getElementById('itemName').value;
+            const itemPrice = parseFloat(document.getElementById('itemPrice').value);
+            const itemQty = parseInt(document.getElementById('itemQty').value);
+
+            try {
+                await ShoppingCart.addItem(itemId, itemName, itemPrice, itemQty);
+                updateCartDisplay();
+                document.getElementById('itemId').value = '';
+                document.getElementById('itemName').value = '';
+                document.getElementById('itemPrice').value = '';
+                document.getElementById('itemQty').value = '1';
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        async function handleRemoveFromCart(itemId) {
+            await ShoppingCart.removeItem(itemId);
+            updateCartDisplay();
+        }
+
+        async function handleCheckout() {
+            const userId = localStorage.getItem('userId');
+            const address = document.getElementById('address').value;
+            const paymentMethod = document.getElementById('paymentMethod').value;
+            const statusDiv = document.getElementById('checkoutStatus');
+
+            try {
+                const result = await CheckoutService.processCheckout(userId, address, paymentMethod);
+                statusDiv.className = 'status-message show success';
+                statusDiv.innerHTML = `
+                    ✓ <strong>Checkout Successful!</strong><br>
+                    Order ID: ${result.orderId}<br>
+                    Total: $${result.amount.toFixed(2)}<br>
+                    Estimated Delivery: ${result.estimatedDelivery}
+                `;
+                updateCartDisplay();
+            } catch (error) {
+                statusDiv.className = 'status-message show error';
+                statusDiv.textContent = '✗ ' + error.message;
+            }
+        }
+
+        // Initialize on load
+        updateCartDisplay();
+    </script>
+</body>
+</html>
